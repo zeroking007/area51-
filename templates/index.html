@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resolume Scheduler</title>
+    <!-- CSS Style -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <div class="glass-container">
+
+        <header>
+            <div class="header-title">
+                <h1>Resolume Automator</h1>
+                <span class="subtitle-text">Precision Clip Scheduling</span>
+            </div>
+            <div class="header-actions" style="display: flex; gap: 12px; align-items: center; justify-content: space-between; width: 100%;">
+                <div class="status-pill">
+                    <span id="connection-dot" class="dot disconnected"></span>
+                    <span id="connection-text">Checking...</span>
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <button id="btn-pause-toggle" class="nav-btn btn-ghost btn-icon-only" title="Pause/Resume Scheduler">
+                        <svg id="pause-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" style="display: none;">
+                            <path d="M10 9v6m4-6v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" />
+                        </svg>
+                        <svg id="play-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" style="display: none;">
+                            <path d="M10 8l6 4-6 4V8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" />
+                        </svg>
+                    </button>
+                    <button id="btn-open-add" class="nav-btn btn-accent" title="Add New Schedule">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="icon">
+                            <path d="M12 5v14m-7-7h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                        <span>New</span>
+                    </button>
+                    <button id="btn-open-settings" class="nav-btn btn-ghost btn-icon-only" title="Settings">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="2" />
+                            <path
+                                d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"
+                                stroke="currentColor" stroke-width="2" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <section class="main-content">
+            <!-- UPCOMING SECTION -->
+            <div class="glass-panel">
+                <div class="section-header">
+                    <h2>Upcoming Schedules</h2>
+                </div>
+
+                <div class="table-wrapper">
+                    <table id="schedule-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 25%;">Time</th>
+                                <th style="text-align: center; width: 18%;">Layer</th>
+                                <th style="text-align: center; width: 18%;">Col</th>
+                                <th style="text-align: center; width: 18%;">Rpt</th>
+                                <th style="text-align: right; width: 21%;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="schedule-list">
+                            <!-- Upcoming Data -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- HISTORY SECTION -->
+            <div class="glass-panel" style="margin-top: 2rem; border-color: rgba(255, 255, 255, 0.05); background: rgba(0, 0, 0, 0.2);">
+                <div class="section-header" style="justify-content: space-between;">
+                    <h2 style="font-size: 1.1rem; color: var(--text-muted);">Recently Executed Schedules</h2>
+                    <button id="btn-clear-history" class="btn-ghost" style="font-size: 0.75rem; padding: 4px 10px; color: #ef4444; border-color: rgba(239, 68, 68, 0.2);">Clear History</button>
+                </div>
+
+                <div class="table-wrapper">
+                    <table id="history-table" style="opacity: 0.7;">
+                        <thead>
+                            <tr>
+                                <th style="width: 25%;">Time</th>
+                                <th style="text-align: center; width: 18%;">Layer</th>
+                                <th style="text-align: center; width: 18%;">Col</th>
+                                <th style="text-align: center; width: 18%;">Rpt</th>
+                                <th style="text-align: right; width: 21%;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-list">
+                            <!-- History Data -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- MAIN FOOTER -->
+    <footer class="app-footer">
+        <p>Copyright &copy; 2026. Designed & Automized by <a href="https://bramszs.my.id"
+                target="_blank">Bramszs.Visual</a></p>
+    </footer>
+
+    <!-- MODAL ADD SCHEDULE -->
+    <div id="add-modal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2>New Schedule</h2>
+                <button id="btn-close-add" class="btn-close">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="subtitle">Set a specific time to trigger a Resolume clip automatically.</p>
+                <form id="schedule-form">
+                    <div class="input-group">
+                        <label>Execution Time</label>
+                        <input type="time" id="input-time" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Layer Index</label>
+                        <input type="number" id="input-layer" min="1" placeholder="e.g. 1" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Column Index</label>
+                        <input type="number" id="input-column" min="1" placeholder="e.g. 2" required>
+                    </div>
+
+                    <div class="input-group-row">
+                        <input type="checkbox" id="input-repeat">
+                        <label for="input-repeat" style="cursor: pointer;">Repeat Daily (Permanent)</label>
+                    </div>
+
+                    <div class="indent-section">
+                        <div class="input-group-row">
+                            <input type="checkbox" id="toggle-duration">
+                            <label for="toggle-duration" style="cursor: pointer; font-weight: 600;">Chain Next Clip After Duration</label>
+                        </div>
+                        
+                        <div id="duration-fields" class="hidden" style="margin-top: 12px; padding-left: 28px;">
+                            <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 8px;">Wait Time (H:M:S)</label>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px;">
+                                <div class="input-group" style="margin: 0;">
+                                    <input type="number" id="input-dur-h" min="0" value="0" placeholder="HH" style="text-align: center;">
+                                </div>
+                                <div class="input-group" style="margin: 0;">
+                                    <input type="number" id="input-dur-m" min="0" max="59" value="0" placeholder="MM" style="text-align: center;">
+                                </div>
+                                <div class="input-group" style="margin: 0;">
+                                    <input type="number" id="input-dur-s" min="0" max="59" value="0" placeholder="SS" style="text-align: center;">
+                                </div>
+                            </div>
+                            <div class="input-grid">
+                                <div class="input-group">
+                                    <label>Next Layer</label>
+                                    <input type="number" id="input-next-layer" min="1">
+                                </div>
+                                <div class="input-group">
+                                    <label>Next Column</label>
+                                    <input type="number" id="input-next-column" min="1">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn-submit">Add to Schedule</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL SETTINGS -->
+    <div id="settings-modal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2>API Settings</h2>
+                <button id="btn-close-settings" class="btn-close">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="server-list-container" style="margin-bottom: 20px;">
+                    <label style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500; display: block; margin-bottom: 12px;">Sync Servers</label>
+                    <div id="settings-server-list" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;">
+                        <!-- Server items will be rendered here -->
+                    </div>
+                    
+                    <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px;">
+                        <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;">Add New Server</p>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 80px; gap: 8px; margin-bottom: 8px;">
+                            <input type="text" id="new-srv-name" placeholder="Name" style="padding: 8px; font-size: 0.85rem;">
+                            <input type="text" id="new-srv-ip" placeholder="IP Root" style="padding: 8px; font-size: 0.85rem;">
+                            <input type="number" id="new-srv-port" placeholder="Port" value="8080" style="padding: 8px; font-size: 0.85rem;">
+                        </div>
+                        <button type="button" onclick="addNewServer()" class="btn-submit" style="padding: 8px; font-size: 0.8rem; background: rgba(56, 189, 248, 0.1); border-color: var(--accent-glow); color: var(--accent);">+ Add Server</button>
+                    </div>
+                </div>
+
+                <div class="input-group"
+                    style="margin-top: 15px; display: flex; flex-direction: row; align-items: center; gap: 10px;">
+                    <input type="checkbox" id="setting-autostart"
+                        style="width: 18px; height: 18px; cursor: pointer; box-shadow: none;">
+                    <label for="setting-autostart"
+                        style="cursor: pointer; margin: 0; color: var(--text-main); font-weight: 500; font-size: 0.9rem;">Auto-start
+                        app when Windows wakes up</label>
+                </div>
+
+                <!-- CHECK FOR UPDATES -->
+                <div style="margin-top: 1rem;">
+                    <button id="btn-check-update" class="btn-submit"
+                        style="background: transparent; color: var(--accent); border: 1px solid rgba(56,189,248,0.3); font-size: 0.85rem; padding: 10px; width: 100%;">
+                        &#x1F50D; Check for Updates
+                    </button>
+                    <div id="update-result"
+                        style="margin-top: 10px; font-size: 0.85rem; text-align: center; min-height: 20px;"></div>
+                </div>
+
+                <!-- THEME SELECTOR -->
+                <div style="margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--glass-border);">
+                    <label
+                        style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500; display: block; margin-bottom: 12px;">Accent
+                        Theme</label>
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <button class="theme-dot" data-theme="blue" title="Blue" style="background: #38bdf8;"></button>
+                        <button class="theme-dot" data-theme="pink" title="Pink" style="background: #f472b6;"></button>
+                        <button class="theme-dot" data-theme="orange" title="Orange"
+                            style="background: #fb923c;"></button>
+                        <button class="theme-dot" data-theme="purple" title="Purple"
+                            style="background: #a78bfa;"></button>
+                    </div>
+                </div>
+
+                <!-- BRAMSZS VISUAL CREDIT -->
+                <div style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--glass-border);">
+                    <label style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">About App</label>
+                    <p style="font-size: 0.95rem; margin-top: 8px; color: var(--text-muted); font-weight: 400;">
+                        Developed by <br>
+                        <span
+                            style="font-size: 1.15rem; font-weight: 700; color: var(--accent); display: inline-block; margin-top: 4px;">
+                            Bramszs.Visual</span>
+                    </p>
+                    
+                    <div id="mobile-access-info" style="display: none; margin-top: 12px; flex-direction: column; gap: 4px;">
+                        <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Web Dashboard URL</span>
+                        <span id="mobile-url" style="font-size: 1rem; font-weight: 700; color: var(--accent); font-family: monospace;">http://127.0.0.1:5000</span>
+                    </div>
+
+                    <p style="font-size: 0.95rem; margin-top: 8px; color: var(--text-muted); font-weight: 400;">
+                        Version <br>
+                        <span
+                            style="font-size: 1.15rem; font-weight: 700; color: var(--accent); display: inline-block; margin-top: 4px;">
+                            {{ version }}</span>
+                        <a href="#" id="link-changelog" style="display: block; font-size: 0.75rem; color: var(--accent); margin-top: 6px; text-decoration: underline;">View Changelog</a>
+                    </p>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button id="btn-save-settings" class="btn-submit">Apply Configuration</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- MODAL CHANGELOG -->
+    <div id="changelog-modal" class="modal-overlay hidden">
+        <div class="modal-box" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2>What's New</h2>
+                <button id="btn-close-changelog" class="btn-close" style="color: var(--text-muted); padding: 4px;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body" style="max-height: 480px; overflow-y: auto; padding-right: 15px;">
+                <div class="changelog-item" style="margin-bottom: 24px;">
+                    <h3 style="color: var(--accent); font-size: 1.15rem; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                        v1.7.2 <span style="font-size: 0.75rem; background: var(--accent-glow); padding: 2px 8px; border-radius: 20px;">Current</span>
+                    </h3>
+                    <ul style="padding-left: 18px; color: var(--text-muted); font-size: 0.95rem; line-height: 1.7; list-style-type: none;">
+                        <li style="margin-bottom: 8px;">🌍 <strong>English Localization</strong>: Fully translated UI and backend logs for global consistency.</li>
+                        <li style="margin-bottom: 8px;">🛡️ <strong>Custom Confirm Modal</strong>: Replaced browser dialogs with a premium glassmorphic modal.</li>
+                        <li style="margin-bottom: 8px;">🕒 <strong>Schedule History</strong>: Tasks now migrate to "Executed Schedules" section instead of being deleted.</li>
+                        <li style="margin-bottom: 8px;">⚙️ <strong>H:M:S Precision</strong>: High-accuracy manual duration control for chained tasks.</li>
+                    </ul>
+                </div>
+                <div class="changelog-item" style="margin-bottom: 24px; opacity: 0.6;">
+                    <h3 style="color: var(--text-main); font-size: 1.0rem; margin-bottom: 8px;">v1.7.1</h3>
+                    <ul style="padding-left: 18px; color: var(--text-muted); font-size: 0.85rem; line-height: 1.6;">
+                        <li>Stability fixes and initial task persistence refactor.</li>
+                    </ul>
+                </div>
+                <div class="changelog-item" style="opacity: 0.4;">
+                    <h3 style="color: var(--text-main); font-size: 0.9rem; margin-bottom: 8px;">v1.7.0</h3>
+                    <ul style="padding-left: 18px; color: var(--text-muted); font-size: 0.8rem; line-height: 1.6;">
+                        <li>Multi-Server Sync (Broadcast Mode).</li>
+                        <li>Precise manual H:M:S chaining.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer" style="margin-top: 15px; border-top: 1px solid var(--glass-border); padding-top: 15px;">
+                <button onclick="document.getElementById('btn-close-changelog').click()" class="btn-submit" style="width: 100%; opacity: 0.8;">Dismiss</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CUSTOM CONFIRM MODAL -->
+    <div id="confirm-modal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2 id="confirm-title" style="margin: 0;">Confirm Action</h2>
+            </div>
+            <div class="modal-body" style="padding: 20px 0;">
+                <p id="confirm-message" style="color: var(--text-muted); line-height: 1.5; margin: 0;">Are you sure you want to proceed?</p>
+                <div class="confirm-actions">
+                    <button id="btn-confirm-cancel" class="btn-cancel">Cancel</button>
+                    <button id="btn-confirm-proceed" class="btn-confirm">Proceed</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Logika Frontend -->
+    <script>
+        let currentSchedules = [];
+        let isPaused = false;
+        let configServers = []; // Global servers list for modal
+
+        async function fetchNetworkInfo() {
+            try {
+                const res = await fetch('/api/network-info');
+                const data = await res.json();
+                if (data.local_ip && data.local_ip !== '127.0.0.1') {
+                    const infoBox = document.getElementById('mobile-access-info');
+                    if (infoBox) infoBox.style.display = 'flex';
+                    const urlEl = document.getElementById('mobile-url');
+                    if (urlEl) urlEl.innerText = data.full_url;
+                }
+            } catch (e) { }
+        }
+
+        // ==================
+        // THEME SYSTEM
+        // ==================
+        const THEMES = {
+            blue: { accent: '#38bdf8', glow: 'rgba(56, 189, 248, 0.3)', bg: 'rgba(56, 189, 248, 0.08)' },
+            pink: { accent: '#f472b6', glow: 'rgba(244, 114, 182, 0.3)', bg: 'rgba(244, 114, 182, 0.08)' },
+            orange: { accent: '#fb923c', glow: 'rgba(251, 146, 60, 0.3)', bg: 'rgba(251, 146, 60, 0.08)' },
+            purple: { accent: '#a78bfa', glow: 'rgba(167, 139, 250, 0.3)', bg: 'rgba(167, 139, 250, 0.08)' },
+        };
+
+        function applyTheme(name, save = true) {
+            const t = THEMES[name];
+            if (!t) return;
+            const root = document.documentElement;
+            root.style.setProperty('--accent', t.accent);
+            root.style.setProperty('--accent-glow', t.glow);
+            // Update body gradient
+            document.body.style.backgroundImage = `
+                radial-gradient(circle at 0% 0%, ${t.bg}, transparent 40%),
+                radial-gradient(circle at 100% 100%, rgba(52, 211, 153, 0.05), transparent 40%)`;
+            // Highlight active dot
+            document.querySelectorAll('.theme-dot').forEach(btn => {
+                btn.style.transform = 'scale(1)';
+                btn.style.boxShadow = 'none';
+                btn.style.outline = 'none';
+            });
+            const active = document.querySelector(`.theme-dot[data-theme="${name}"]`);
+            if (active) {
+                active.style.transform = 'scale(1.3)';
+                active.style.boxShadow = `0 0 12px ${t.glow}`;
+                active.style.outline = `2px solid ${t.accent}`;
+            }
+            localStorage.setItem('rs-theme', name);
+            // Persist to settings.json
+            if (save) {
+                fetch('/api/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ..._lastSettings, theme: name })
+                }).catch(() => { });
+            }
+        }
+
+        // Track last known settings to merge theme into them
+        let _lastSettings = { ip: '127.0.0.1', port: '8080', autostart: false, theme: 'blue' };
+
+        // Apply saved theme on boot (from localStorage as fast fallback)
+        const savedTheme = localStorage.getItem('rs-theme') || 'blue';
+        applyTheme(savedTheme, false);
+
+
+        async function fetchSettings() {
+            try {
+                const res = await fetch('/api/settings');
+                const data = await res.json();
+                _lastSettings = data;
+                document.getElementById('setting-ip').value = data.ip;
+                document.getElementById('setting-port').value = data.port;
+                document.getElementById('setting-autostart').checked = data.autostart || false;
+                // Apply theme from settings.json (overrides localStorage)
+                if (data.theme) {
+                    applyTheme(data.theme, false);
+                    localStorage.setItem('rs-theme', data.theme);
+                }
+            } catch (e) { }
+        }
+
+        async function fetchSchedules() {
+            try {
+                const res = await fetch('/api/schedule');
+                currentSchedules = await res.json();
+                renderTable();
+            } catch (e) { }
+        }
+
+        async function checkUpdate() {
+            const btn = document.getElementById('btn-check-update');
+            const resultDiv = document.getElementById('update-result');
+            if (!btn) return;
+            btn.innerText = 'Checking...';
+            btn.disabled = true;
+            try {
+                const [updateRes, versionRes] = await Promise.all([
+                    fetch('/api/check-update'),
+                    fetch('/api/app-version')
+                ]);
+                const updateData = await updateRes.json();
+                const versionData = await versionRes.json();
+                const currentVersion = (versionData.version || '').trim();
+                const latestVersion = (updateData.latest_version || '').trim();
+
+                if (updateData.update_available && latestVersion && latestVersion !== currentVersion) {
+                    resultDiv.innerHTML = `&#x2728; <strong style="color:var(--accent)">v${latestVersion} available!</strong> <a href="${updateData.url}" target="_blank" style="color:var(--accent)">Download</a>`;
+                } else {
+                    resultDiv.innerHTML = `<span style="color:var(--success)">&#x2713; You are on the latest version (v${currentVersion})</span>`;
+                }
+            } catch (e) {
+                resultDiv.innerHTML = `<span style="color:var(--text-muted)">Could not check for updates.</span>`;
+            }
+            btn.innerText = '\uD83D\uDD0D Check for Updates';
+            btn.disabled = false;
+        }
+
+        async function checkConnection() {
+            try {
+                const res = await fetch('/api/status');
+                const data = await res.json();
+
+                const dot = document.getElementById('connection-dot');
+                const text = document.getElementById('connection-text');
+
+                if (data.status === 'connected') {
+                    dot.className = 'dot connected';
+                    text.innerText = `Servers: ${data.servers_summary}`;
+                } else {
+                    dot.className = 'dot disconnected';
+                    text.innerText = 'Servers Offline';
+                }
+
+                isPaused = data.paused;
+                updatePauseUI(isPaused);
+            } catch (e) {
+                const dot = document.getElementById('connection-dot');
+                const text = document.getElementById('connection-text');
+                dot.className = 'dot disconnected';
+                text.innerText = 'Service Down';
+            }
+        }
+
+        function updatePauseUI(paused) {
+            isPaused = paused;
+            const btn = document.getElementById('btn-pause-toggle');
+            const pauseIcon = document.getElementById('pause-icon');
+            const playIcon = document.getElementById('play-icon');
+            
+            if (paused) {
+                btn.style.color = '#ef4444';
+                btn.style.background = 'rgba(239, 68, 68, 0.1)';
+                pauseIcon.style.display = 'none';
+                playIcon.style.display = 'block';
+                btn.title = 'Resume Scheduler';
+            } else {
+                btn.style.color = 'var(--success)';
+                btn.style.background = 'rgba(52, 211, 153, 0.1)';
+                pauseIcon.style.display = 'block';
+                playIcon.style.display = 'none';
+                btn.title = 'Pause Scheduler';
+            }
+        }
+
+        async function togglePause() {
+            try {
+                const res = await fetch('/api/pause', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ paused: !isPaused })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    updatePauseUI(data.paused);
+                }
+            } catch (e) { }
+        }
+
+        async function triggerManual(layer, column) {
+            try {
+                const res = await fetch('/api/trigger-now', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ layer, column })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    const dot = document.getElementById('connection-dot');
+                    dot.style.transform = 'scale(1.5)';
+                    setTimeout(() => dot.style.transform = 'scale(1)', 300);
+                }
+            } catch (e) { }
+        }
+
+        function formatDuration(totalSeconds) {
+            if (!totalSeconds || totalSeconds <= 0) return '-';
+            const h = Math.floor(totalSeconds / 3600);
+            const m = Math.floor((totalSeconds % 3600) / 60);
+            const s = totalSeconds % 60;
+            return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
+        function renderTable() {
+            const upcomingBody = document.getElementById('schedule-list');
+            const historyBody = document.getElementById('history-list');
+            upcomingBody.innerHTML = '';
+            historyBody.innerHTML = '';
+
+            currentSchedules.sort((a, b) => a.time.localeCompare(b.time));
+
+            currentSchedules.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                const repeatIcon = item.repeat ? '&#x21BB;' : '&#x2715;';
+                const repeatColor = item.repeat ? 'var(--accent)' : 'var(--text-muted)';
+                
+                const hasNext = item.next_layer && item.next_column;
+                const durationText = hasNext ? formatDuration(item.duration) : '-';
+
+                const isCompleted = item.completed === true;
+
+                tr.innerHTML = `
+                    <td class="col-time" data-label="Time">
+                        ${item.time}
+                        <span style="display: block; font-size: 0.7rem; color: var(--text-muted); font-weight: 400;">Wait: ${durationText}</span>
+                    </td>
+                    <td style="text-align: center; color: var(--accent); font-weight: 600;" data-label="Layer">${item.layer}</td>
+                    <td style="text-align: center; color: var(--accent); font-weight: 600;" data-label="Column">${item.column}</td>
+                    <td style="text-align: center; color: ${repeatColor}; font-size: 1.1rem; font-weight: bold;" data-label="Repeat">${repeatIcon}</td>
+                    <td style="text-align: right; display: flex; gap: 6px; justify-content: flex-end; align-items: center; padding-top: 12px;" data-label="Action">
+                        ${!isCompleted ? `<button class="btn-delete" style="color: var(--success); border-color: rgba(52, 211, 153, 0.2);" onclick="triggerManual(${item.layer}, ${item.column})" title="Trigger Now">&#x25B6;</button>` : ''}
+                        <button class="btn-delete" onclick="removeSchedule(${index})" title="Delete Schedule">Del</button>
+                    </td>
+                `;
+
+                if (isCompleted) {
+                    historyBody.appendChild(tr);
+                } else {
+                    upcomingBody.appendChild(tr);
+                }
+            });
+        }
+
+        async function removeSchedule(index) {
+            const confirmed = await showConfirm(
+                "Delete Schedule", 
+                "Are you sure you want to remove this scheduled clip? This action cannot be undone."
+            );
+            if (confirmed) {
+                currentSchedules.splice(index, 1);
+                renderTable();
+                await autoSave();
+            }
+        }
+
+        async function autoSave() {
+            try {
+                await fetch('/api/schedule', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(currentSchedules)
+                });
+            } catch (e) { }
+        }
+
+        // ------------------
+        // MODAL ADD SCHEDULE
+        // ------------------
+        const addModal = document.getElementById('add-modal');
+        document.getElementById('btn-open-add').addEventListener('click', () => {
+            addModal.classList.remove('hidden');
+            setTimeout(() => { addModal.style.opacity = '1'; }, 10);
+
+            document.getElementById('input-time').value = '';
+            document.getElementById('input-layer').value = '';
+            document.getElementById('input-column').value = '';
+            setTimeout(() => { document.getElementById('input-time').focus(); }, 300);
+        });
+
+        document.getElementById('btn-close-add').addEventListener('click', closeAddModal);
+        addModal.addEventListener('click', (e) => {
+            if (e.target === addModal) closeAddModal();
+        });
+
+        function closeAddModal() {
+            addModal.style.opacity = '0';
+            setTimeout(() => { addModal.classList.add('hidden'); }, 300);
+        }
+
+        document.getElementById('schedule-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const time = document.getElementById('input-time').value;
+            const layer = parseInt(document.getElementById('input-layer').value);
+            const column = parseInt(document.getElementById('input-column').value);
+            const repeat = document.getElementById('input-repeat').checked;
+            
+            const hasNext = document.getElementById('toggle-duration').checked;
+            let duration = 0;
+            let next_layer = 0;
+            let next_column = 0;
+            
+            if (hasNext) {
+                const h = parseInt(document.getElementById('input-dur-h').value) || 0;
+                const m = parseInt(document.getElementById('input-dur-m').value) || 0;
+                const s = parseInt(document.getElementById('input-dur-s').value) || 0;
+                duration = (h * 3600) + (m * 60) + s;
+                
+                next_layer = parseInt(document.getElementById('input-next-layer').value) || 0;
+                next_column = parseInt(document.getElementById('input-next-column').value) || 0;
+            }
+
+            currentSchedules.push({ 
+                time, layer, column, repeat,
+                duration, next_layer, next_column,
+                completed: false
+            });
+            
+            renderTable();
+            closeAddModal();
+            autoSave();
+        });
+
+        // Duration toggle logic
+        document.getElementById('toggle-duration').addEventListener('change', (e) => {
+            const fields = document.getElementById('duration-fields');
+            if (e.target.checked) {
+                fields.classList.remove('hidden');
+            } else {
+                fields.classList.add('hidden');
+            }
+        });
+
+        document.getElementById('btn-clear-history').addEventListener('click', async () => {
+            const confirmed = await showConfirm(
+                "Clear History",
+                "Do you want to permanently delete all recently executed schedules?"
+            );
+            if (confirmed) {
+                currentSchedules = currentSchedules.filter(item => !item.completed);
+                renderTable();
+                await autoSave();
+            }
+        });
+
+        document.getElementById('btn-pause-toggle').addEventListener('click', togglePause);
+
+        // ------------------
+        // MODAL SETTINGS
+        // ------------------
+        const settingsModal = document.getElementById('settings-modal');
+        document.getElementById('btn-open-settings').addEventListener('click', openSettings);
+
+        document.getElementById('btn-close-settings').addEventListener('click', closeSettings);
+        settingsModal.addEventListener('click', (e) => {
+            if (e.target === settingsModal) closeSettings();
+        });
+
+        function closeSettings() {
+            settingsModal.style.opacity = '0';
+            setTimeout(() => { settingsModal.classList.add('hidden'); }, 300);
+        }
+
+        async function openSettings() {
+            try {
+                const res = await fetch('/api/settings');
+                const data = await res.json();
+                
+                configServers = data.servers || [];
+                renderServerList();
+                
+                document.getElementById('setting-autostart').checked = data.autostart || false;
+                
+                const currentTheme = data.theme || 'blue';
+                applyTheme(currentTheme);
+                
+                settingsModal.classList.remove('hidden');
+                setTimeout(() => { settingsModal.style.opacity = '1'; }, 10);
+            } catch (e) { }
+        }
+
+        function renderServerList() {
+            const list = document.getElementById('settings-server-list');
+            list.innerHTML = '';
+            
+            configServers.forEach((srv, idx) => {
+                const div = document.createElement('div');
+                div.style = "display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); border-radius: 10px;";
+                div.innerHTML = `
+                    <div style="flex-grow: 1;">
+                        <span style="font-weight: 600; font-size: 0.9rem; color: var(--accent);">${srv.name}</span>
+                        <p style="font-size: 0.75rem; color: var(--text-muted);">${srv.ip}:${srv.port}</p>
+                    </div>
+                    <button type="button" onclick="removeServer(${idx})" style="background: transparent; border: none; color: #ef4444; cursor: pointer; padding: 5px;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    </button>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function addNewServer() {
+            const name = document.getElementById('new-srv-name').value || "Server";
+            const ip = document.getElementById('new-srv-ip').value;
+            const port = document.getElementById('new-srv-port').value || "8080";
+            
+            if (!ip) return;
+            
+            configServers.push({ name, ip, port, enabled: true });
+            document.getElementById('new-srv-name').value = '';
+            document.getElementById('new-srv-ip').value = '';
+            renderServerList();
+        }
+
+        function removeServer(idx) {
+            configServers.splice(idx, 1);
+            renderServerList();
+        }
+
+        document.getElementById('link-changelog').addEventListener('click', (e) => {
+            e.preventDefault();
+            const modal = document.getElementById('changelog-modal');
+            modal.classList.remove('hidden');
+            setTimeout(() => { modal.style.opacity = '1'; }, 10);
+        });
+
+        document.getElementById('btn-close-changelog').addEventListener('click', () => {
+            const modal = document.getElementById('changelog-modal');
+            modal.style.opacity = '0';
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
+        });
+
+        // ------------------
+        // CUSTOM CONFIRM SYSTEM
+        // ------------------
+        let confirmCallback = null;
+
+        function showConfirm(title, message) {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('confirm-modal');
+                document.getElementById('confirm-title').innerText = title;
+                document.getElementById('confirm-message').innerText = message;
+                
+                modal.classList.remove('hidden');
+                setTimeout(() => { modal.style.opacity = '1'; }, 10);
+
+                const cleanup = (value) => {
+                    modal.style.opacity = '0';
+                    setTimeout(() => { modal.classList.add('hidden'); }, 300);
+                    resolve(value);
+                };
+
+                document.getElementById('btn-confirm-proceed').onclick = () => cleanup(true);
+                document.getElementById('btn-confirm-cancel').onclick = () => cleanup(false);
+            });
+        }
+
+        async function saveSettings() {
+            const autostart = document.getElementById('setting-autostart').checked;
+            const btn = document.getElementById('btn-save-settings');
+            const ogText = btn.innerText;
+            btn.innerText = 'Applying...';
+            
+            const payload = {
+                servers: configServers,
+                autostart,
+                theme: document.body.dataset.theme || 'blue',
+                paused: isPaused
+            };
+
+            try {
+                const res = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    closeSettings();
+                    checkConnection();
+                }
+                btn.innerText = ogText;
+            } catch (e) { btn.innerText = ogText; }
+        }
+
+        document.getElementById('btn-check-update').addEventListener('click', checkUpdate);
+
+        // Wire theme dots
+        document.querySelectorAll('.theme-dot').forEach(btn => {
+            btn.addEventListener('click', () => applyTheme(btn.dataset.theme));
+        });
+
+        fetchSettings();
+        fetchSchedules();
+        checkConnection();
+        // Update check is now manual — click button in Settings
+        window.addEventListener('load', () => {
+            checkConnection();
+            fetchSchedules();
+            fetchNetworkInfo();
+            
+            // Re-fetch schedules periodically
+            setInterval(() => {
+                checkConnection();
+                fetchSchedules();
+            }, 10000); 
+            
+            setInterval(() => {
+                checkConnection(); 
+            }, 5000);
+        });
+    </script>
+</body>
+
+</html>
