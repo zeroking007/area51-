@@ -17,7 +17,7 @@
 ## 🛠️ Instalasi
 
 ### Menggunakan Versi Compile (.exe)
-1. Unduh rilisan terbaru dari [Halaman Releases](https://github.com/CyrusCore/ResolumeScheduler/releases).
+1. Unduh rilisan terbaru dari [Halaman Releases](https://drive.google.com/drive/folders/1ViN43TgaqHqTT-e2cxL74D4tcwb_1_-u?usp=sharing)).
 2. Ekstrak file `.zip`.
 3. Jalankan `ResolumeScheduler.exe`.
 
