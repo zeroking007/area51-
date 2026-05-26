@@ -44,5 +44,3 @@ Jika Anda ingin memodifikasi atau menjalankan langsung dari script:
 ## 📱 Akses Mobile
 Buka menu **Settings** > **About App** untuk melihat URL Dashboard Web unik Anda (contoh: `http://192.168.1.5:5000`). Buka alamat tersebut di browser HP Anda.
 
-## 📄 Lisensi
-Copyright © 2026. Designed & Automized by **Bramszs.Visual**.
